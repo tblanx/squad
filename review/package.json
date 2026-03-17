@@ -1,0 +1,17 @@
+{
+  "name": "review",
+  "version": "1.0.0",
+  "description": "Draft review UI for Eddie's content",
+  "type": "module",
+  "scripts": {
+    "start": "tsx server.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

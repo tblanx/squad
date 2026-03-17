@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+
+# Generated intel output (managed by nightly cleanup)
+intel/data/
+intel/drafts/
+intel/DAILY-INTEL.md
+
+# Eddie daily memory notes (MEMORY.md is kept)
+eddie/memory/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].md
+
+# macOS
+.DS_Store

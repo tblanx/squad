@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eddie — Draft Review</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #111;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #111;
+      color: #fff;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 15px; font-weight: 400; letter-spacing: 0.05em; }
+    header span { font-size: 12px; color: #888; }
+
+    nav {
+      background: #1a1a1a;
+      border-bottom: 1px solid #2a2a2a;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    nav a {
+      color: #888;
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s;
+    }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #fff; border-bottom-color: #fff; }
+    nav .nav-links {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+    }
+    nav .platform-link {
+      color: #888;
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border: 1px solid #333;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    nav .platform-link:hover { color: #fff; border-color: #666; }
+
+    #app { max-width: 780px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #888;
+      margin: 36px 0 14px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      margin-bottom: 16px;
+      transition: border-color 0.15s;
+    }
+    .card.approved { border-left: 3px solid #2d6a4f; }
+    .card.rejected { border-left: 3px solid #9b2335; opacity: 0.5; }
+    .card.edited   { border-left: 3px solid #b5783a; }
+
+    .card-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .card-meta {
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .card-angle { font-size: 14px; font-weight: 500; color: #333; }
+
+    .card-body { padding: 16px 20px; }
+
+    .post-text {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #333;
+      white-space: pre-wrap;
+    }
+
+    .tweet { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #eee; }
+    .tweet:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .tweet-num { font-size: 11px; color: #aaa; margin-bottom: 3px; }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      font-size: 14px;
+      line-height: 1.65;
+      padding: 12px;
+      border: 1px solid #ddd;
+      resize: vertical;
+      font-family: inherit;
+      color: #333;
+      background: #fafafa;
+    }
+    textarea:focus { outline: none; border-color: #111; background: #fff; }
+
+    .actions {
+      padding: 12px 20px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 8px 16px;
+      transition: opacity 0.15s, background 0.15s;
+    }
+    button:disabled { opacity: 0.4; cursor: default; }
+
+    .btn-approve { background: #2d6a4f; color: #fff; }
+    .btn-approve:hover:not(:disabled) { background: #25573f; }
+    .btn-edit    { background: #f0f0f0; color: #333; }
+    .btn-edit:hover:not(:disabled) { background: #e0e0e0; }
+    .btn-reject  { background: #fff; color: #9b2335; border: 1px solid #9b233530; }
+    .btn-reject:hover:not(:disabled) { background: #9b233510; }
+    .btn-submit  { background: #b5783a; color: #fff; }
+    .btn-submit:hover:not(:disabled) { background: #9a6330; }
+
+    .status-badge {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+    }
+    .badge-approved { color: #2d6a4f; background: #2d6a4f15; }
+    .badge-rejected { color: #9b2335; background: #9b233515; }
+    .badge-edited   { color: #b5783a; background: #b5783a15; }
+
+    #error {
+      background: #9b233515;
+      border: 1px solid #9b233330;
+      color: #9b2335;
+      padding: 16px 20px;
+      font-size: 14px;
+    }
+
+    .char-count {
+      font-size: 11px;
+      color: #aaa;
+      text-align: right;
+      margin-top: 4px;
+    }
+    .char-count.over { color: #9b2335; font-weight: 600; }
+
+    .reject-note {
+      display: none;
+      padding: 0 20px 12px;
+    }
+    .reject-note input {
+      width: 100%;
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #333;
+    }
+    .reject-note input:focus { outline: none; border-color: #9b2335; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Eddie — Draft Review</h1>
+  <span id="date-label"></span>
+</header>
+<nav>
+  <a href="/" class="active">Drafts</a>
+  <a href="/sources">Sources</a>
+  <div class="nav-links">
+    <a href="https://www.linkedin.com/feed/" target="_blank" class="platform-link">LinkedIn</a>
+    <a href="https://x.com/compose/tweet" target="_blank" class="platform-link">X</a>
+  </div>
+</nav>
+
+<div id="app">
+  <div id="error" style="display:none"></div>
+  <div id="content"></div>
+</div>
+
+<script>
+const API = 'http://localhost:3131';
+let allDrafts = null;
+
+async function load() {
+  const dateLabel = document.getElementById('date-label');
+  const today = new Date().toISOString().split('T')[0];
+  dateLabel.textContent = today;
+
+  try {
+    const res = await fetch(`${API}/api/drafts?date=${today}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    allDrafts = data;
+    render(data);
+  } catch (err) {
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').textContent = err.message;
+  }
+}
+
+function render(data) {
+  const el = document.getElementById('content');
+  el.innerHTML = '';
+
+  if (data.linkedin?.length) {
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = 'LinkedIn';
+    el.appendChild(label);
+    data.linkedin.forEach((d, i) => el.appendChild(makeCard(d, 'LinkedIn', i, false)));
+  }
+
+  if (data.x?.length) {
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = 'X';
+    el.appendChild(label);
+    data.x.forEach((d, i) => el.appendChild(makeCard(d, 'X', i, true)));
+  }
+}
+
+function makeCard(draft, platform, index, isX) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.status = '';
+
+  const originalContent = isX ? draft.tweets.join('\n\n') : draft.post;
+
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-meta">${platform} · ${draft.source_brief}</div>
+      <div class="card-angle">${draft.angle}</div>
+    </div>
+    <div class="card-body">
+      ${isX
+        ? draft.tweets.map((t, i) => `<div class="tweet"><div class="tweet-num">Tweet ${i+1} · ${t.length}/280</div><div class="post-text">${escHtml(t)}</div></div>`).join('')
+        : `<div class="post-text">${escHtml(originalContent)}</div>`
+      }
+      <div class="edit-area" style="display:none">
+        <textarea class="edit-textarea">${escHtml(originalContent)}</textarea>
+        ${isX ? '<div class="char-count"></div>' : ''}
+      </div>
+    </div>
+    <div class="reject-note">
+      <input type="text" placeholder="Optional: why didn't this work? (helps Eddie learn)" />
+    </div>
+    <div class="actions">
+      <button class="btn-approve">👍 Approve</button>
+      <button class="btn-edit">✏️ Edit</button>
+      <button class="btn-reject">👎 Reject</button>
+      <span class="status-badge" style="display:none"></span>
+    </div>`;
+
+  const approveBtn = card.querySelector('.btn-approve');
+  const editBtn    = card.querySelector('.btn-edit');
+  const rejectBtn  = card.querySelector('.btn-reject');
+  const editArea   = card.querySelector('.edit-area');
+  const postView   = card.querySelector('.card-body > .post-text, .card-body > .tweet');
+  const textarea   = card.querySelector('.edit-textarea');
+  const charCount  = card.querySelector('.char-count');
+  const badge      = card.querySelector('.status-badge');
+  const rejectNote = card.querySelector('.reject-note');
+  const noteInput  = card.querySelector('.reject-note input');
+
+  // char counter for X
+  if (isX && textarea && charCount) {
+    textarea.addEventListener('input', () => {
+      const lines = textarea.value.split('\n\n');
+      const over = lines.some(l => l.length > 280);
+      charCount.textContent = lines.map((l,i) => `Tweet ${i+1}: ${l.length}/280`).join(' · ');
+      charCount.className = 'char-count' + (over ? ' over' : '');
+    });
+  }
+
+  let editing = false;
+
+  editBtn.addEventListener('click', () => {
+    if (!editing) {
+      // enter edit mode
+      editing = true;
+      card.querySelectorAll('.post-text, .tweet').forEach(el => el.style.display = 'none');
+      editArea.style.display = 'block';
+      textarea.focus();
+      editBtn.textContent = '💾 Submit to Eddie';
+      editBtn.className = 'btn-submit';
+      if (isX && charCount) charCount.dispatchEvent(new Event('input'));
+    } else {
+      // submit edit
+      submitFeedback(card, badge, {
+        platform, angle: draft.angle, source_brief: draft.source_brief,
+        action: 'edit', original: originalContent, edited: textarea.value
+      });
+    }
+  });
+
+  approveBtn.addEventListener('click', () => {
+    submitFeedback(card, badge, {
+      platform, angle: draft.angle, source_brief: draft.source_brief, action: 'approve'
+    });
+  });
+
+  rejectBtn.addEventListener('click', () => {
+    if (rejectNote.style.display === 'block') {
+      submitFeedback(card, badge, {
+        platform, angle: draft.angle, source_brief: draft.source_brief,
+        action: 'reject', note: noteInput.value
+      });
+    } else {
+      rejectNote.style.display = 'block';
+      noteInput.focus();
+      rejectBtn.textContent = '👎 Confirm Reject';
+    }
+  });
+
+  return card;
+}
+
+async function submitFeedback(card, badge, payload) {
+  const btns = card.querySelectorAll('button');
+  btns.forEach(b => b.disabled = true);
+
+  try {
+    await fetch(`${API}/api/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const labels = { approve: 'Approved', edit: 'Submitted to Eddie', reject: 'Rejected' };
+    const classes = { approve: 'badge-approved', edit: 'badge-edited', reject: 'badge-rejected' };
+    const cardClass = { approve: 'approved', edit: 'edited', reject: 'rejected' };
+
+    card.classList.add(cardClass[payload.action]);
+    badge.textContent = labels[payload.action];
+    badge.className = `status-badge ${classes[payload.action]}`;
+    badge.style.display = 'inline-block';
+
+    // hide reject note
+    const rn = card.querySelector('.reject-note');
+    if (rn) rn.style.display = 'none';
+
+    // keep approve button visible for approved cards so content is readable
+    if (payload.action !== 'approve') {
+      btns.forEach(b => b.style.display = 'none');
+    } else {
+      btns.forEach(b => b.style.display = 'none');
+    }
+  } catch {
+    btns.forEach(b => b.disabled = false);
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+load();
+</script>
+</body>
+</html>

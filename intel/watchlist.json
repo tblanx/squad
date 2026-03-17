@@ -1,0 +1,66 @@
+[
+  {
+    "name": "AI Agents & Orchestration",
+    "queries": [
+      "AI agent framework release update",
+      "agent orchestration new features",
+      "model context protocol MCP update",
+      "LangGraph LangChain new release",
+      "human-in-the-loop AI agent systems",
+      "agent memory tracing observability"
+    ],
+    "primaryDomains": []
+  },
+  {
+    "name": "Operator Signal",
+    "queries": [
+      "AI agent production deployment lessons",
+      "building AI agents real implementation",
+      "AI workflow automation pain points",
+      "what engineers are actually building with AI agents"
+    ],
+    "primaryDomains": [
+      "newsletter.pragmaticengineer.com"
+    ]
+  },
+  {
+    "name": "Tech Thought Leaders",
+    "queries": [
+      "AI platform strategy big tech competitive dynamics",
+      "software business model disruption aggregation",
+      "venture capital tech investing macro thesis",
+      "frontier technology company deep dive analysis",
+      "creator economy solopreneur personal brand business",
+      "startup distribution moat growth strategy",
+      "AI impact knowledge work productivity enterprise",
+      "tech industry inflection point strategic shift"
+    ],
+    "primaryDomains": [
+      "stratechery.com",
+      "letters.thedankoe.com",
+      "chamath.substack.com",
+      "notboring.co"
+    ]
+  },
+  {
+    "name": "Marketing Trends",
+    "queries": [
+      "go-to-market",
+      "gtm",
+      "content",
+      "automation",
+      "cold email",
+      "b2b",
+      "growth motions",
+      "acquisition",
+      "campaign",
+      "retention"
+    ],
+    "primaryDomains": [
+      "thesocialjuice.substack.com",
+      "smartlead.ai",
+      "exitfive.com",
+      "garyvaynerchuk.com"
+    ]
+  }
+]

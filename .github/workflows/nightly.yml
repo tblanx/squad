@@ -1,0 +1,86 @@
+name: Squad Nightly Run
+
+on:
+  schedule:
+    # 10:30 UTC = 6:30 AM EDT / 5:30 AM EST
+    - cron: '30 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Cleanup — Expire old intel
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Delete intel files older than 10 days
+        run: |
+          find intel/data -name "*.json" -mtime +10 -delete 2>/dev/null || true
+          find intel/drafts -mindepth 1 -maxdepth 1 -type d -mtime +10 -exec rm -rf {} + 2>/dev/null || true
+      - name: Commit cleanup if anything changed
+        run: |
+          git config user.name "squad-bot"
+          git config user.email "squad-bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: expire intel older than 10 days"
+          git push
+
+  spock:
+    name: Spock — Research
+    runs-on: ubuntu-latest
+    needs: cleanup
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: spock/package-lock.json
+      - run: npm install
+        working-directory: spock
+      - run: npm run dev
+        working-directory: spock
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+
+      # pass intel to Eddie via artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: intel
+          path: intel/
+
+  eddie:
+    name: Eddie — Content
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: spock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: eddie/package-lock.json
+
+      # restore Spock's intel
+      - uses: actions/download-artifact@v4
+        with:
+          name: intel
+          path: intel/
+
+      - run: npm install
+        working-directory: eddie
+      - run: npm run dev
+        working-directory: eddie
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # save drafts as artifact for download
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drafts
+          path: intel/drafts/
+          retention-days: 7
