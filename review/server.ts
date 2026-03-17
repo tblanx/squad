@@ -59,6 +59,15 @@ function saveSources(body: { themes?: unknown; topics?: unknown; sources?: unkno
   }
 }
 
+function listDraftDates(): string[] {
+  const draftsDir = path.join(INTEL_DIR, 'drafts');
+  if (!fs.existsSync(draftsDir)) return [];
+  return fs.readdirSync(draftsDir)
+    .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d) && fs.existsSync(path.join(draftsDir, d, 'drafts.json')))
+    .sort()
+    .reverse();
+}
+
 function readBody(req: http.IncomingMessage): Promise<string> {
   return new Promise((resolve) => {
     let body = '';
@@ -88,6 +97,12 @@ const server = http.createServer(async (req, res) => {
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify(drafts));
+  }
+
+  // GET /api/dates
+  if (req.method === 'GET' && url.pathname === '/api/dates') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify(listDraftDates()));
   }
 
   // GET /api/sources
