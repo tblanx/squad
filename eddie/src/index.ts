@@ -12,7 +12,8 @@ if (!process.env.ANTHROPIC_API_KEY) {
 }
 
 async function run() {
-  const today = new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   console.log('Eddie: starting content run…');
 
   console.log('Eddie: reading Spock intel…');

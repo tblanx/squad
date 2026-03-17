@@ -11,7 +11,8 @@ const CUSTOM_FILE = path.join(INTEL_DIR, 'custom-sources.json');
 const PORT = 3131;
 
 function today(): string {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function loadDrafts(date: string) {
