@@ -90,7 +90,8 @@ Respond ONLY with valid JSON matching this exact schema. No markdown, no preambl
 Produce briefs for the top 3-5 most significant items only. If nothing meets the bar, return a single brief titled "No significant signal today" explaining why.`;
 
 export async function generateBriefs(results: RawResult[]): Promise<DigestOutput> {
-  const today = new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
   const researchBlock = results
     .map(
@@ -107,7 +108,7 @@ Content: ${r.content}`
   const client = new Anthropic();
   const message = await client.messages.create({
     model: 'claude-opus-4-6',
-    max_tokens: 4096,
+    max_tokens: 8096,
     system: SYSTEM_PROMPT,
     messages: [
       {

@@ -46,7 +46,7 @@ async function tavilySearch(
     query,
     search_depth: 'advanced',
     max_results: 5,
-    days: 1,
+    days: 3,
   };
 
   if (includeDomains?.length) {
@@ -88,15 +88,23 @@ export async function fetchResearch(): Promise<RawResult[]> {
   ];
 
   for (const topic of allTopics) {
-    // merge custom domains into any primary domain list
-    const domains = topic.primaryDomains
+    const pinnedDomains = topic.primaryDomains?.length
       ? [...topic.primaryDomains, ...customDomains]
       : customDomains.length ? customDomains : undefined;
 
     for (const query of topic.queries) {
-      const hits = await tavilySearch(query, domains);
+      // always run an open search (no domain restriction)
+      const openHits = await tavilySearch(query);
+      await new Promise((r) => setTimeout(r, 400));
 
-      for (const hit of hits) {
+      // if domains are pinned, also run a domain-restricted search to surface preferred sources
+      const pinnedHits = pinnedDomains?.length
+        ? await tavilySearch(query, pinnedDomains)
+        : [];
+      if (pinnedDomains?.length) await new Promise((r) => setTimeout(r, 400));
+
+      // pinned hits first (higher priority), then open hits
+      for (const hit of [...pinnedHits, ...openHits]) {
         if (seen.has(hit.url)) continue;
         seen.add(hit.url);
 
@@ -109,8 +117,6 @@ export async function fetchResearch(): Promise<RawResult[]> {
           score: hit.score,
         });
       }
-
-      await new Promise((r) => setTimeout(r, 400));
     }
   }
 
