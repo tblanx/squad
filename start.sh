@@ -15,8 +15,8 @@ RUN_ID=$(gh run list \
 if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
   echo "No successful runs yet — using existing local drafts."
 else
-  mkdir -p intel
-  gh run download "$RUN_ID" --repo tblanx/squad --name drafts --dir intel/ 2>/dev/null && \
+  mkdir -p intel/drafts
+  gh run download "$RUN_ID" --repo tblanx/squad --name drafts --dir intel/drafts/ 2>/dev/null && \
     echo "Drafts updated from run $RUN_ID." || \
     echo "Already up to date."
 fi
