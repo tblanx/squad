@@ -21,6 +21,9 @@ else
     echo "Already up to date."
 fi
 
+# Kill any existing server on port 3131
+lsof -ti :3131 | xargs kill -9 2>/dev/null || true
+
 # Open browser then start server
 echo "Opening http://localhost:3131..."
 open http://localhost:3131
