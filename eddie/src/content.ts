@@ -68,6 +68,35 @@ Produce 2-3 LinkedIn drafts and 2-3 X drafts. Each drawn from a different brief 
 LinkedIn posts: 150-250 words. Hook in the first line. No hashtag spam (1-2 max, only if genuinely useful).
 X posts: 1-3 tweets per draft. Each tweet under 280 characters. Can be standalone or a short thread.`;
 
+async function callWithRetry(
+  client: Anthropic,
+  params: Parameters<Anthropic['messages']['create']>[0],
+  maxAttempts = 4
+): Promise<Anthropic.Message> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await client.messages.create(params) as Anthropic.Message;
+    } catch (err: unknown) {
+      const isRateLimit =
+        err instanceof Error &&
+        'status' in err &&
+        (err as { status: number }).status === 429;
+
+      if (!isRateLimit || attempt === maxAttempts) throw err;
+
+      const retryAfter =
+        err instanceof Error &&
+        'headers' in err &&
+        (err as { headers: Record<string, string> }).headers?.['retry-after'];
+      const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : Math.min(30000 * attempt, 180000);
+
+      console.log(`Eddie: rate limited — waiting ${waitMs / 1000}s before retry (attempt ${attempt}/${maxAttempts})…`);
+      await new Promise((res) => setTimeout(res, waitMs));
+    }
+  }
+  throw new Error('unreachable');
+}
+
 export async function generateDrafts(
   intel: string,
   memory: string,
@@ -78,8 +107,8 @@ export async function generateDrafts(
     : '';
 
   const client = new Anthropic();
-  const message = await client.messages.create({
-    model: 'claude-opus-4-6',
+  const message = await callWithRetry(client, {
+    model: 'claude-sonnet-4-6',
     max_tokens: 4096,
     system: SYSTEM_PROMPT,
     messages: [
